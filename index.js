@@ -3,25 +3,31 @@ const path = require('path')
 const { config, engine } = require('express-edge')
 const mongoose = require('mongoose')
 const Post = require('./database/models/Post')
-// const bodyParser = require('body-parser') //DEPRECATED
+const fileUpload = require('express-fileupload')
 
 const app = new express()
 
 mongoose.connect('mongodb://localhost/node-js-blog')
 
-// app.use(bodyParser.json()) //DEPRECATED
-// app.use(bodyParser.urlencoded({ extended: true })) //DEPRECATED
-
+app.use(fileUpload())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(engine)
 app.use(express.static('public'))
 
+const validateCreatePostMiddleware = (req, res, next) => {
+    if(!req.files || !req.body.username || !req.body.title || !req.body.subtitle || !req.body.content) {
+        return res.redirect('/posts/new')
+    }
+    next()
+}
+
+app.use('/posts/store', validateCreatePostMiddleware)
+
 app.set('views', `${__dirname}/views`)
 
 app.get('/', async (req, res) => {
     const posts = await Post.find({})
-    console.log(posts)
     res.render('index', {
         posts
     })
@@ -45,8 +51,12 @@ app.get('/posts/new', (req, res) => {
 })
 
 app.post('/posts/store', (req, res) => {
-    Post.create(req.body, (error, post) => {
-        res.redirect('/')
+    const { image } = req.files
+
+    image.mv(path.resolve(__dirname, 'public/posts', image.name), (error) => {
+        Post.create({...req.body, image: `/posts/${image.name}`}, (error, post) => {
+            res.redirect('/')
+        })
     })
 })
 
