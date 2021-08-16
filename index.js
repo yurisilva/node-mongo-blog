@@ -18,15 +18,18 @@ app.use('/posts/store', validateCreatePostMiddleware)
 const createPostController = require('./controllers/createPost')
 const homePageController = require('./controllers/homePage')
 const storePostController = require('./controllers/storePost')
+const storeUserController = require('./controllers/storeUser')
 const getPostController = require('./controllers/getPost')
-
+const createUserController = require('./controllers/createUser')
 
 app.set('views', `${__dirname}/views`)
 
 app.get('/', homePageController)
 app.get('/post/:id', getPostController)
 app.get('/posts/new', createPostController)
+app.get('/auth/register', createUserController)
 app.post('/posts/store', storePostController)
+app.post('/users/register', storeUserController)
 
 app.listen(2000, () => {
     console.log('App listening on port 2000')
