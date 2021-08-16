@@ -1,9 +1,8 @@
 const express = require('express')
-const path = require('path')
 const { config, engine } = require('express-edge')
 const mongoose = require('mongoose')
-const Post = require('./database/models/Post')
 const fileUpload = require('express-fileupload')
+const validateCreatePostMiddleware = require('./middleware/storePost')
 
 const app = new express()
 
@@ -14,51 +13,20 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(engine)
 app.use(express.static('public'))
-
-const validateCreatePostMiddleware = (req, res, next) => {
-    if(!req.files || !req.body.username || !req.body.title || !req.body.subtitle || !req.body.content) {
-        return res.redirect('/posts/new')
-    }
-    next()
-}
-
 app.use('/posts/store', validateCreatePostMiddleware)
+
+const createPostController = require('./controllers/createPost')
+const homePageController = require('./controllers/homePage')
+const storePostController = require('./controllers/storePost')
+const getPostController = require('./controllers/getPost')
+
 
 app.set('views', `${__dirname}/views`)
 
-app.get('/', async (req, res) => {
-    const posts = await Post.find({})
-    res.render('index', {
-        posts
-    })
-})
-
-app.get('/about', (req, res) => {
-    res.render('about')
-})
-
-app.get('/post/:id', async (req, res) => {
-    const post = await Post.findById(req.params.id)
-    res.render('post', { post })
-})
-
-app.get('/contact', (req, res) => {
-    res.render('contact')
-})
-
-app.get('/posts/new', (req, res) => {
-    res.render('create')
-})
-
-app.post('/posts/store', (req, res) => {
-    const { image } = req.files
-
-    image.mv(path.resolve(__dirname, 'public/posts', image.name), (error) => {
-        Post.create({...req.body, image: `/posts/${image.name}`}, (error, post) => {
-            res.redirect('/')
-        })
-    })
-})
+app.get('/', homePageController)
+app.get('/post/:id', getPostController)
+app.get('/posts/new', createPostController)
+app.post('/posts/store', storePostController)
 
 app.listen(2000, () => {
     console.log('App listening on port 2000')
