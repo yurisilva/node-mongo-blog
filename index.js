@@ -3,11 +3,11 @@ const { config, engine } = require('express-edge')
 const mongoose = require('mongoose')
 const fileUpload = require('express-fileupload')
 const validateCreatePostMiddleware = require('./middleware/storePost')
-const expressSession = require('express-session')
+const session = require('express-session')
+const MongoStore = require('connect-mongo')
 
 const app = new express()
-
-mongoose.connect('mongodb://localhost/node-js-blog')
+mongoose.connect('mongodb://localhost/node-js-blog', { useNewUrlParser: true, useUnifiedTopology: true })
 
 app.use(fileUpload())
 app.use(express.json())
@@ -15,7 +15,14 @@ app.use(express.urlencoded({ extended: true }))
 app.use(engine)
 app.use(express.static('public'))
 app.use('/posts/store', validateCreatePostMiddleware)
-app.use(expressSession({ secret: 'secret' }))
+app.use(session(
+    { 
+        secret: 'secret',
+        store: MongoStore.create({ 
+            client: mongoose.connection.getClient(),
+            collectionName: 'sessions'
+        })
+    }))
 
 const createPostController = require('./controllers/createPost')
 const homePageController = require('./controllers/homePage')
