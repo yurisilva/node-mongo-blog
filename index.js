@@ -2,9 +2,10 @@ const express = require('express')
 const { config, engine } = require('express-edge')
 const mongoose = require('mongoose')
 const fileUpload = require('express-fileupload')
-const validateCreatePostMiddleware = require('./middleware/storePost')
+const storePost = require('./middleware/storePost')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
+const auth = require('./middleware/auth')
 
 const app = new express()
 mongoose.connect('mongodb://localhost/node-js-blog', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -14,7 +15,6 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(engine)
 app.use(express.static('public'))
-app.use('/posts/store', validateCreatePostMiddleware)
 app.use(session(
     { 
         secret: 'secret',
@@ -37,10 +37,10 @@ app.set('views', `${__dirname}/views`)
 
 app.get('/', homePageController)
 app.get('/post/:id', getPostController)
-app.get('/posts/new', createPostController)
+app.get('/posts/new', auth, createPostController)
 app.get('/auth/register', createUserController)
 app.get('/auth/login', loginController)
-app.post('/posts/store', storePostController)
+app.post('/posts/store', auth, storePost, storePostController)
 app.post('/users/register', storeUserController)
 app.post('/users/login', loginUserController)
 
