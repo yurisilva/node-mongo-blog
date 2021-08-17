@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
         if(error) {
             const errors = Object.keys(error.errors).map(key => error.errors[key].message)
 
-            req.session.registrationErrors = errors
+            req.flash('registrationErrors', errors)
             return res.redirect('/auth/register')
         }
         res.redirect('/')

@@ -6,10 +6,12 @@ const storePost = require('./middleware/storePost')
 const session = require('express-session')
 const MongoStore = require('connect-mongo')
 const auth = require('./middleware/auth')
+const connectFlash = require('connect-flash')
 
 const app = new express()
 mongoose.connect('mongodb://localhost/node-js-blog', { useNewUrlParser: true, useUnifiedTopology: true })
 
+app.use(connectFlash())
 app.use(fileUpload())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
