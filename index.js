@@ -49,10 +49,11 @@ app.get('/post/:id', getPostController)
 app.get('/posts/new', auth, createPostController)
 app.post('/posts/store', auth, storePost, storePostController)
 app.get('/auth/login', redirectIfAuthenticated, loginController)
-app.get('/auth/logout', redirectIfAuthenticated, logoutController)
+app.get('/auth/logout', auth, logoutController)
 app.post('/users/login', redirectIfAuthenticated, loginUserController)
 app.get('/auth/register', redirectIfAuthenticated, createUserController)
 app.post('/users/register', redirectIfAuthenticated, storeUserController)
+app.use((req, res) => res.render('notFound'))
 
 app.listen(2000, () => {
     console.log('App listening on port 2000')
